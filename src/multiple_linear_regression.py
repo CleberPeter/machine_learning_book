@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-# multiple linear regression hypothesis: o1*x1 + o2*x2
+# multiple linear regression hypothesis: o2*x1 + o3*x2
 def h(x, o):
     return np.dot(x, o) # mx2 . 2x1 -> mx1
 
@@ -21,14 +21,14 @@ def dJ(x, o, y):
 
 def plot_route(x, o_hist, y):
     # arbitrary data to visualize cost function
-    o1 = np.arange(-10, 10, 0.25)
     o2 = np.arange(-10, 10, 0.25)
+    o3 = np.arange(-10, 10, 0.25)
 
     # prepare data in meshgrid format
-    X, Y = np.meshgrid(o1, o2)
+    X, Y = np.meshgrid(o2, o3)
     
     # serialize meshgrid to use J
-    c_o = np.power(len(o1), 2)
+    c_o = np.power(len(o2), 2)
     o = np.zeros((2, c_o))
     o[0, :] = np.reshape(X, [1, c_o])
     o[1, :] = np.reshape(Y, [1, c_o])
@@ -74,9 +74,9 @@ def gradient_descent(x, o, y, alpha, min_grad, max_iterations):
     return [o, o_hist, i]
 
 # model o
-o1 = 1
 o2 = 1
-o = np.array([[o1],[o2]])
+o3 = 1
+o = np.array([[o2],[o3]])
 # execute gradient descent to minimize o
 o_start = [[10],[10]] # arbitrary start
 # config gradient descent
@@ -100,6 +100,5 @@ y = h(x,o)
 [min_o, o_hist_gd, iterations] = gradient_descent(x, o_start, y, alpha, min_grad, max_iterations)
 print('iterations:', iterations)
 plot_route(x, o_hist_gd, y)
-
 
 plt.show()
