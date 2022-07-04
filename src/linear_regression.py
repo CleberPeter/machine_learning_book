@@ -4,7 +4,7 @@ import numpy as np
 # linear regression hypothesis: o1 + o2*x
 def h(x, o):
     m = len(x)
-    input = np.zeros(m, 2)
+    input = np.zeros([m, 2])
     input[:,0] = np.ones(m)
     input[:,1] = x[:, 0]
     
@@ -46,9 +46,8 @@ def compute(x, o, y):
 
     plt.legend(['y', h_mse_legend, h_mae_legend])
     
-x = np.arange(0, 10, 1)
+x = np.arange(0, 10, 1)[:, np.newaxis] # column vector
 m = len(x)
-x = np.reshape(x, [m, 1])
 y = 1 + 2*x
 
 # random [[o1],[o2]] parameter values
@@ -81,7 +80,7 @@ Z = np.reshape(mae, np.shape(X))
 
 #plot
 fig = plt.figure(2)
-ax = fig.gca(projection='3d')
+ax = fig.add_subplot(projection='3d')
 ax.set_xlabel(r'$\theta_{1}$')
 ax.set_ylabel(r'$\theta_{2}$')
 ax.plot_surface(X, Y, Z)
@@ -92,3 +91,5 @@ plt.plot(1,2, '*') # center point -> minimum cost
 plt.clabel(contours, inline = True, fontsize = 10)
 plt.xlabel(r'$\theta_{1}$')
 plt.ylabel(r'$\theta_{2}$')
+
+plt.show()

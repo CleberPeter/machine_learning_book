@@ -162,9 +162,8 @@ alpha = 1.5e-2   # good learning rate
 min_grad = 1.0e-2
 
 # define training data
-x = np.arange(0, 10, 1)
+x = np.arange(0, 10, 1)[:, np.newaxis] # column vector
 m = len(x)
-x = np.reshape(x, [m, 1])
 y = 2 + 2*x 
 
 # execute gradient descent to minimize o
