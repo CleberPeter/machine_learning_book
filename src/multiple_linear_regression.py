@@ -1,9 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-# multiple linear regression hypothesis: o2*x1 + o3*x2
+# multiple linear regression hypothesis: o1 + o2*x1 + o3*x2 + on+1*xn
 def h(x, o):
-    return np.dot(x, o) # mx2 . 2x1 -> mx1
+    [m, n] = np.shape(x)
+    input = np.zeros([m, n+1])
+    input[:,0] = np.ones(m)
+    input[:,1:] = x[:, 0:]
+
+    return np.dot(input, o) # mx(n+1) . (n+1)x1 = mx1
 
 # J = MSE/2
 def J(x, o, y):
@@ -12,12 +17,16 @@ def J(x, o, y):
     return np.sum(np.power(h_x - y, 2), axis=0)*1/(2*m)
 
 def dJ(x, o, y):
-    m = np.shape(x)[0]
+    [m, n] = np.shape(x)
     h_x = h(x, o)
-    x = np.transpose(x) # mx2 -> 2xm
     e = h_x - y # mx1
-    dJ = np.dot(x, e)*1/m # 2xm . mx1 = 2x1
-    return dJ
+
+    x = np.transpose(x) # mxn -> nxm
+    
+    dJ = np.zeros([n+1, 1])   
+    dJ[0] = np.sum(e)/m
+    dJ[1:] = np.dot(x, e)/m # nxm . mx1 -> nx1
+    return dJ # n+1x1
 
 def plot_route(x, o_hist, y):
     # arbitrary data to visualize cost function
@@ -29,9 +38,9 @@ def plot_route(x, o_hist, y):
     
     # serialize meshgrid to use J
     c_o = np.power(len(o2), 2)
-    o = np.zeros((2, c_o))
-    o[0, :] = np.reshape(X, [1, c_o])
-    o[1, :] = np.reshape(Y, [1, c_o])
+    o = np.zeros((3, c_o))
+    o[1, :] = np.reshape(X, [1, c_o])
+    o[2, :] = np.reshape(Y, [1, c_o])
     j = J(x, o, y)
 
     # transform j to meshgrid
@@ -44,21 +53,20 @@ def plot_route(x, o_hist, y):
     fig = plt.figure(figsize=(20,10))
     # surface
     ax = fig.add_subplot(121, projection='3d')
-    ax.set_xlabel(r'$\theta_{1}$')
-    ax.set_ylabel(r'$\theta_{2}$')
+    ax.set_xlabel(r'$\theta_{2}$')
+    ax.set_ylabel(r'$\theta_{3}$')
     
     ax.plot_surface(X, Y, Z, alpha=0.2)
-    ax.plot(o_hist[0,:], o_hist[1,:], j, linestyle='--', marker='o')
+    ax.plot(o_hist[1,:], o_hist[2,:], j, linestyle='--', marker='o')
     
     # plot contours    
     ax = fig.add_subplot(122)
-    levels = [10, 50, 100, 250, 500, 750, 1000] # to improve view 
-    contours = ax.contour(X, Y, Z, levels, colors='black')
-    ax.plot(o_hist[0,:], o_hist[1,:], '*')
+    contours = ax.contour(X, Y, Z, colors='black')
+    ax.plot(o_hist[1,:], o_hist[2,:], '*')
 
     plt.clabel(contours, inline = True, fontsize = 10)
-    plt.xlabel(r'$\theta_{1}$')
-    plt.ylabel(r'$\theta_{2}$')
+    plt.xlabel(r'$\theta_{2}$')
+    plt.ylabel(r'$\theta_{3}$')
 
 def gradient_descent(x, o, y, alpha, min_grad, max_iterations):
     i = 0
@@ -73,32 +81,64 @@ def gradient_descent(x, o, y, alpha, min_grad, max_iterations):
         
     return [o, o_hist, i]
 
+def norm(x): # axis = 0 -> by column, 1 -> by row
+    u = np.mean(x, axis = 0)
+    s = np.ptp(x, axis = 0)
+    return (x - u)/s
+
 # model o
+o1 = 0
 o2 = 1
 o3 = 1
-o = np.array([[o2],[o3]])
+o = np.array([[o1],[o2],[o3]])
 # execute gradient descent to minimize o
-o_start = [[10],[10]] # arbitrary start
+o_start = np.array([[0],[10],[10]]) # arbitrary start
 # config gradient descent
 max_iterations = 10000
-# alpha = 6e-2   # high learning rate
-alpha = 1.5e-2   # good learning rate
-# alpha = 1e-3   # low learning rate
+# alpha = 1.5e-2   # good learning rate
+alpha = 2e-3   # caution with learning rate to prevent divergence
 min_grad = 1.0e-2
-
-# same range 
-x = np.mgrid[-10:10:1, -10:10:1].reshape(2,-1).T # mx2
-y = h(x,o)
-[min_o, o_hist_gd, iterations] = gradient_descent(x, o_start, y, alpha, min_grad, max_iterations)
-print('iterations:', iterations)
-plot_route(x, o_hist_gd, y)
-
-# different ranges
-alpha = 2e-3   # changed learning rate to prevent divergence
+"""
 x = np.mgrid[-10:10:1, -30:30:3].reshape(2,-1).T # mx2
 y = h(x,o)
 [min_o, o_hist_gd, iterations] = gradient_descent(x, o_start, y, alpha, min_grad, max_iterations)
+print('iterations:', min_o)
 print('iterations:', iterations)
 plot_route(x, o_hist_gd, y)
+
+# inputs normalized
+alpha = 3   # good learning rate
+x = norm(x)
+y = h(x,o)
+[min_o, o_hist_gd, iterations] = gradient_descent(x, o_start, y, alpha, min_grad, max_iterations)
+print('min_o:', min_o)
+print('iterations:', iterations)
+plot_route(x, o_hist_gd, y)
+"""
+
+# polynomial regression
+x = np.mgrid[-10:10:1].reshape(1,-1).T # mx1
+o = np.array([[-8], [-2], [8], [2]])
+x1 = x
+x2 = np.power(x, 2)
+x3 = np.power(x, 3)
+x_cubic = np.column_stack((x1, x2, x3)) # mx3
+y = h(x_cubic, o)
+plt.figure()
+plt.plot(x, y)
+
+# find o
+alpha = 1   # good learning rate
+o_start = np.array([[10],[10],[10],[10]]) # arbitrary start
+x_norm = norm(x_cubic)
+[min_o, o_hist_gd, iterations] = gradient_descent(x_norm, o_start, y, alpha, min_grad, max_iterations)
+print(iterations)
+
+j_hist = J(x_norm, o_hist_gd, y)
+y_min = h(x_norm, min_o)
+plt.plot(x, y_min)
+
+plt.figure()
+plt.plot(j_hist)
 
 plt.show()
