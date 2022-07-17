@@ -15,6 +15,10 @@ def h(x, o):
     x = add_ones_column(x)
     return np.dot(x, o) # mx(n+1) . (n+1)x1 = mx1
 
+def MSE(h_x, y):
+    m = len(h_x)
+    return np.sum(np.power(h_x - y, 2), axis=0)*1/m
+
 # J = MSE/2
 def J(x, o, y):
     m = np.shape(x)[0]
@@ -151,6 +155,7 @@ print(iterations)
 
 j_hist = J(x_norm, o_hist_gd, y)
 y_min = h(x_norm, min_o)
+print('MSE:', MSE(y_min, y))
 plt.plot(x, y_min)
 
 plt.figure()
