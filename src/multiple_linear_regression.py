@@ -1,14 +1,19 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+# [a b c] -> [1 a b c]
+def add_ones_column(x):
+    [m, n] = np.shape(x)
+    new_x = np.zeros([m, n+1])
+    new_x[:,0] = np.ones(m)
+    new_x[:,1:] = x[:, 0:]
+
+    return new_x
+
 # multiple linear regression hypothesis: o1 + o2*x1 + o3*x2 + on+1*xn
 def h(x, o):
-    [m, n] = np.shape(x)
-    input = np.zeros([m, n+1])
-    input[:,0] = np.ones(m)
-    input[:,1:] = x[:, 0:]
-
-    return np.dot(input, o) # mx(n+1) . (n+1)x1 = mx1
+    x = add_ones_column(x)
+    return np.dot(x, o) # mx(n+1) . (n+1)x1 = mx1
 
 # J = MSE/2
 def J(x, o, y):
@@ -86,6 +91,11 @@ def norm(x): # axis = 0 -> by column, 1 -> by row
     s = np.ptp(x, axis = 0)
     return (x - u)/s
 
+def normal_equation(x, y):
+    x = add_ones_column(x)
+    x_t = np.transpose(x)
+    return np.dot(np.dot(np.linalg.inv(np.dot(x_t, x)), x_t), y)
+
 # model o
 o1 = 0
 o2 = 1
@@ -98,23 +108,27 @@ max_iterations = 10000
 # alpha = 1.5e-2   # good learning rate
 alpha = 2e-3   # caution with learning rate to prevent divergence
 min_grad = 1.0e-2
-"""
-x = np.mgrid[-10:10:1, -30:30:3].reshape(2,-1).T # mx2
-y = h(x,o)
-[min_o, o_hist_gd, iterations] = gradient_descent(x, o_start, y, alpha, min_grad, max_iterations)
-print('iterations:', min_o)
-print('iterations:', iterations)
-plot_route(x, o_hist_gd, y)
 
-# inputs normalized
-alpha = 3   # good learning rate
-x = norm(x)
+x = np.mgrid[-10:10:1, -30:30:3].reshape(2,-1).T # mx2
 y = h(x,o)
 [min_o, o_hist_gd, iterations] = gradient_descent(x, o_start, y, alpha, min_grad, max_iterations)
 print('min_o:', min_o)
 print('iterations:', iterations)
 plot_route(x, o_hist_gd, y)
-"""
+
+# inputs normalized
+alpha = 3   # good learning rate
+x_norm = norm(x)
+y = h(x_norm,o)
+[min_o, o_hist_gd, iterations] = gradient_descent(x_norm, o_start, y, alpha, min_grad, max_iterations)
+print('min_o:', min_o)
+print('iterations:', iterations)
+plot_route(x, o_hist_gd, y)
+
+# analitycal_solution
+x = np.mgrid[-10:10:1, -30:30:3].reshape(2,-1).T # mx2
+y = h(x,o)
+print('min_o:', normal_equation(x, y)) 
 
 # polynomial regression
 x = np.mgrid[-10:10:1].reshape(1,-1).T # mx1
@@ -132,6 +146,7 @@ alpha = 1   # good learning rate
 o_start = np.array([[10],[10],[10],[10]]) # arbitrary start
 x_norm = norm(x_cubic)
 [min_o, o_hist_gd, iterations] = gradient_descent(x_norm, o_start, y, alpha, min_grad, max_iterations)
+print(min_o)
 print(iterations)
 
 j_hist = J(x_norm, o_hist_gd, y)
