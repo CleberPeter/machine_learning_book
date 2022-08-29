@@ -201,7 +201,18 @@ def binarize(x):
         np.array (mx1)
     """
     return np.heaviside(x-0.5, 1)
-"""
+
+def boundary_decision(x, o):
+    """
+    Boundary decision for h = o0 + o1x1 + o2x2
+    Arguments:
+        x: np.array (mxn)
+        o: np.array (n+1x1)
+    Returns:
+        np.array (mx1)
+    """
+    return -o[1]/o[2]*x[:,0] -o[0]/o[2] 
+
 # plot sigma function
 m = 100
 x = np.linspace(-10, 10, m).reshape(m, 1)
@@ -236,15 +247,26 @@ x = np.linspace(-10, 10, m).reshape(m, 1)
 o1 = np.linspace(-3, 3, m)
 o2 = o1
 plot_cost(x, [o1, o2], y, logistic_regression_cost)
-"""
+
 # import dataset
 df = pd.read_csv('datasets/classifier_binary/dogs_cats.csv')
 df.head()
 
 # preprocess the output
-x = np.vstack(df[['comprimento', 'peso']].values)
+plt.figure(figsize=(20,10))
+
 df['classe'].replace(['cachorro', 'gato'], [0, 1], inplace=True)
-y = np.vstack(df['classe'].values)
+df_cats = df.loc[df['classe'] == 1]
+df_dogs = df.loc[df['classe'] == 0]
+
+plt.scatter(df_cats['comprimento'], df_cats['peso'])
+plt.scatter(df_dogs['comprimento'], df_dogs['peso'])
+plt.xlabel('comprimento')
+plt.ylabel('peso')
+plt.legend(['gato', 'cachorro'])
+
+x = np.vstack(df[['comprimento', 'peso']].values) # mx2
+y = np.vstack(df['classe'].values) # mx1
 
 # config optimizer
 o_start = np.array([[0],[0],[0]]) # arbitrary start
@@ -266,5 +288,18 @@ plt.plot(h_x_image, binarize(h_x_image))
 h_x = h(x, min_o)
 h_x = binarize(h_x)
 print('accuracy: ', accuracy(h_x, y))
+
+# show classification process
+plt.figure(figsize=(20,10))
+
+plt.scatter(df_cats['comprimento'], df_cats['peso'])
+plt.scatter(df_dogs['comprimento'], df_dogs['peso'])
+
+bd = boundary_decision(x, min_o)
+plt.plot(x[:, 0], bd)
+
+plt.xlabel('comprimento')
+plt.ylabel('peso')
+plt.legend(['gato', 'cachorro', 'decision boundary'])
 
 plt.show()
