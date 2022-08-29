@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 
 def sigma(z):
     """
@@ -132,6 +133,75 @@ def logistic_regression_cost(x, o, y):
 
     return -J/m
 
+def dJ(x, o, y):
+    """
+    Cost function gradient
+    Arguments:
+        x: np.array (mxn)
+        o: np.array (n+1x1)
+        y: np.array (mx1)
+    Returns:
+        np.array (n+1x1) (cost gradient)
+    """
+    m = np.shape(x)[0]
+    h_x = h(x, o) # mx1
+    e = h_x - y
+    x = add_ones_column(x)
+    return np.dot(np.transpose(x), e)*1/m
+
+def gradient_descent(x, o, y, alpha, min_grad, max_iterations):
+    """
+    Gradient descent -> Discover what o minimize j
+    Arguments:
+        x: np.array (mxn)
+        o: np.array (n+1x1)
+        y: np.array (mx1)
+        alpha: double (learning rate)
+        min_grad: double (stop condition)
+        max_iterations: int
+    Returns:
+        o: np.array (n+1x1)
+        o_hist: np.array (n+1xi)
+        i: int (iterations number)
+    """
+    i = 0
+    o_hist = o
+    grad = dJ(x, o, y)
+    while np.linalg.norm(grad) > min_grad and i < max_iterations:
+        o = o - alpha*grad
+        o_hist = np.c_[o_hist, o] # append column
+
+        grad = dJ(x, o, y)
+        i += 1
+        
+    return [o, o_hist, i]
+
+def accuracy(h_x, y):
+    """
+    Accuracy from classification
+    Arguments:
+        h_x: np.array (mx1)
+        y: np.array (mx1)
+    Returns:
+        double
+    """
+    m = np.shape(h_x)[0]
+    hints = 0
+    for h_x_i, y_i in zip(h_x, y):
+        if h_x_i == y_i:
+            hints += 1
+    return hints/m
+
+def binarize(x):
+    """
+    Continuous to discrete binary mapping (x >= 0.5 ? 1 : 0)
+    Arguments:
+        x: np.array (mx1)
+    Returns:
+        np.array (mx1)
+    """
+    return np.heaviside(x-0.5, 1)
+"""
 # plot sigma function
 m = 100
 x = np.linspace(-10, 10, m).reshape(m, 1)
@@ -166,5 +236,35 @@ x = np.linspace(-10, 10, m).reshape(m, 1)
 o1 = np.linspace(-3, 3, m)
 o2 = o1
 plot_cost(x, [o1, o2], y, logistic_regression_cost)
+"""
+# import dataset
+df = pd.read_csv('datasets/classifier_binary/dogs_cats.csv')
+df.head()
+
+# preprocess the output
+x = np.vstack(df[['comprimento', 'peso']].values)
+df['classe'].replace(['cachorro', 'gato'], [0, 1], inplace=True)
+y = np.vstack(df['classe'].values)
+
+# config optimizer
+o_start = np.array([[0],[0],[0]]) # arbitrary start
+# config gradient descent
+max_iterations = 10000
+alpha = 1e-2
+min_grad = 1e-1
+
+[min_o, o_hist_gd, iterations] = gradient_descent(x, o_start, y, alpha, min_grad, max_iterations)
+print('min_o:', min_o)
+print('iterations:', iterations)
+
+# plot mapping result
+h_x_image = np.linspace(0, 1, 1000)
+plt.figure(figsize=(20,10))
+plt.plot(h_x_image, binarize(h_x_image))
+
+# get model accuracy
+h_x = h(x, min_o)
+h_x = binarize(h_x)
+print('accuracy: ', accuracy(h_x, y))
 
 plt.show()
