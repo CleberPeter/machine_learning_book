@@ -211,7 +211,46 @@ def boundary_decision(x, o):
     Returns:
         np.array (mx1)
     """
-    return -o[1]/o[2]*x[:,0] -o[0]/o[2] 
+    return -o[1]/o[2]*x[:,0] -o[0]/o[2]
+
+class Model:
+    def __init__(self, name, o):
+        """
+        Logistic regression binary model
+        Arguments:
+            name: text
+            o: np.array (n+1x1)
+        Returns:
+        """
+        self.name = name
+        self.o = o
+
+def train(x, y, class_name):
+    """
+    Train logistic regression binary model
+    Arguments:
+        x: np.array (mxn)
+        y: np.array (mx1)
+        class_name: text
+    Returns:
+        Model object
+    """
+
+    y = np.where(y != class_name, int(0), y) # negative class
+    y = np.where(y == class_name, int(1), y) # positive class
+    y = np.vstack([int(y_str) for y_str in y])
+
+    # config optimizer
+    o_start = np.array([[0],[0],[0],[0],[0]]) # arbitrary start
+    # config gradient descent
+    max_iterations = 10000
+    alpha = 1e-2
+    min_grad = 1e-1
+
+    [min_o, o_hist_gd, iterations] = gradient_descent(x, o_start, y, alpha, min_grad, max_iterations)
+
+    h_x = binarize(h(x, min_o))
+    return Model(class_name, min_o)
 
 # plot sigma function
 m = 100
@@ -302,4 +341,19 @@ plt.xlabel('comprimento')
 plt.ylabel('peso')
 plt.legend(['gato', 'cachorro', 'decision boundary'])
 
-plt.show()
+# multiclass classifier
+df = pd.read_csv('datasets/classifier_multiclass/fruits.csv')
+df.head()
+
+import seaborn as sns; sns.set()
+sns.pairplot(df, hue='fruit_name', height=2)
+
+x = np.vstack(df[['mass', 'width', 'height', 'color_score']].values) # mx4
+y = np.vstack(df['fruit_name'].values) # mx1
+
+models = []
+for class_name in df['fruit_name'].unique():
+    model = train(x, y, class_name)
+    models.append(model)
+
+# plt.show()
