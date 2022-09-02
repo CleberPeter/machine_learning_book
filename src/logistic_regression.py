@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns; 
 
 def sigma(z):
     """
@@ -224,6 +225,16 @@ class Model:
         """
         self.name = name
         self.o = o
+    
+    def h(self, x):
+        """
+        Model hypothesis
+        Arguments:
+            x: np.array (mxn)
+        Returns:
+            np.array (mx1)
+        """
+        return h(x, self.o)
 
 def train(x, y, class_name):
     """
@@ -244,14 +255,39 @@ def train(x, y, class_name):
     o_start = np.array([[0],[0],[0],[0],[0]]) # arbitrary start
     # config gradient descent
     max_iterations = 10000
-    alpha = 1e-2
-    min_grad = 1e-1
+    alpha = 1e-3
+    min_grad = 1e-3
 
     [min_o, o_hist_gd, iterations] = gradient_descent(x, o_start, y, alpha, min_grad, max_iterations)
-
-    h_x = binarize(h(x, min_o))
+    print(min_o)
+    j = J_for_multiple_o_set(x, o_hist_gd, y, logistic_regression_cost)
+    plt.plot(j[0])
+    print(accuracy(binarize(h(x, min_o)), y))
     return Model(class_name, min_o)
 
+def predict(x, models):
+    """
+    Multiclass prediction
+    Arguments:
+        x: np.array (mxn)
+        models: list (Model Object)
+    Returns:
+        list
+    """
+    m = np.shape(x)[0]
+    k = len(models)
+    result = np.zeros([m, k])
+    for idx, model in enumerate(models):
+        result[:, idx:idx+1] = model.h(x)
+
+    # select model with higher probability
+    predict = []
+    for idx in np.argmax(result, axis=1):
+        predict.append(models[idx].name)
+
+    return predict
+
+"""
 # plot sigma function
 m = 100
 x = np.linspace(-10, 10, m).reshape(m, 1)
@@ -340,20 +376,21 @@ plt.plot(x[:, 0], bd)
 plt.xlabel('comprimento')
 plt.ylabel('peso')
 plt.legend(['gato', 'cachorro', 'decision boundary'])
-
+"""
 # multiclass classifier
 df = pd.read_csv('datasets/classifier_multiclass/fruits.csv')
-df.head()
+print(df.head())
 
-import seaborn as sns; sns.set()
-sns.pairplot(df, hue='fruit_name', height=2)
+sns.set()
+# sns.pairplot(df, hue='fruit_name', height=2)
 
 x = np.vstack(df[['mass', 'width', 'height', 'color_score']].values) # mx4
 y = np.vstack(df['fruit_name'].values) # mx1
 
 models = []
-for class_name in df['fruit_name'].unique():
+for class_name in ['apple']:# df['fruit_name'].unique():
     model = train(x, y, class_name)
     models.append(model)
 
-# plt.show()
+# print(predict(x, models))
+plt.show()
