@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns; 
+from sklearn.metrics import confusion_matrix
 
 def sigma(z):
     """
@@ -221,6 +222,7 @@ class Model:
         Arguments:
             name: text
             o: np.array (n+1x1)
+            o_hist_gd: np.array (n+1xk)
         Returns:
         """
         self.name = name
@@ -235,13 +237,14 @@ class Model:
             np.array (mx1)
         """
         return h(x, self.o)
-
-def train(x, y, class_name):
+    
+def train_and_plot_cost(x, y, alpha, class_name):
     """
-    Train logistic regression binary model
+    Train logistic regression binary model and plot your cost evolution
     Arguments:
         x: np.array (mxn)
         y: np.array (mx1)
+        alpha: learning rate
         class_name: text
     Returns:
         Model object
@@ -255,16 +258,48 @@ def train(x, y, class_name):
     o_start = np.array([[0],[0],[0],[0],[0]]) # arbitrary start
     # config gradient descent
     max_iterations = 10000
-    alpha = 1e-3
     min_grad = 1e-3
 
     [min_o, o_hist_gd, iterations] = gradient_descent(x, o_start, y, alpha, min_grad, max_iterations)
-    print(min_o)
+
     j = J_for_multiple_o_set(x, o_hist_gd, y, logistic_regression_cost)
     plt.plot(j[0])
-    print(accuracy(binarize(h(x, min_o)), y))
+
     return Model(class_name, min_o)
 
+def train_models(x, y, alpha, class_names):
+    """
+    Train logistic regression binary models and plot your cost evolution
+    Arguments:
+        x: np.array (mxn)
+        y: np.array (mx1)
+        alpha: learning rate
+        class_names: list (text)
+    Returns:
+        list (Model)
+    """
+    plt.figure(figsize=(20,10))
+    models = []
+    for class_name in class_names:
+        model = train_and_plot_cost(x, y, alpha, class_name)
+        models.append(model)
+    plt.legend('Positive Class: ' + class_names)
+
+    return models
+
+def norm(x):
+    """
+    Nomalize x
+    Arguments:
+        x: np.array (mxn)
+    Returns:
+        np.array (mxn)
+    """
+    # axis = 0 -> by column, 1 -> by row
+    u = np.mean(x, axis = 0)
+    s = np.ptp(x, axis = 0)
+    return (x - u)/s
+    
 def predict(x, models):
     """
     Multiclass prediction
@@ -287,7 +322,28 @@ def predict(x, models):
 
     return predict
 
-"""
+def plot_confusion_matrix(h_x, y, class_names):
+    """
+    Accuracy from classification
+    Arguments:
+        h_x: np.array (mx1)
+        y: np.array (mx1)
+        class_names: list (Text)
+    Returns:
+        double
+    """
+    plt.figure(figsize=(10,5))
+    cm = confusion_matrix(y, h_x, labels= class_names)
+
+    ax= plt.subplot()
+    sns.heatmap(cm, annot=True, fmt='g')
+
+    ax.set_xlabel('Predicted labels') 
+    ax.set_ylabel('True labels')
+    ax.set_title('Confusion Matrix') 
+    ax.xaxis.set_ticklabels(class_names)
+    ax.yaxis.set_ticklabels(class_names)
+
 # plot sigma function
 m = 100
 x = np.linspace(-10, 10, m).reshape(m, 1)
@@ -376,21 +432,35 @@ plt.plot(x[:, 0], bd)
 plt.xlabel('comprimento')
 plt.ylabel('peso')
 plt.legend(['gato', 'cachorro', 'decision boundary'])
-"""
+
 # multiclass classifier
 df = pd.read_csv('datasets/classifier_multiclass/fruits.csv')
 print(df.head())
 
+plt.figure()
 sns.set()
-# sns.pairplot(df, hue='fruit_name', height=2)
+sns.pairplot(df, hue='fruit_name', height=2)
 
-x = np.vstack(df[['mass', 'width', 'height', 'color_score']].values) # mx4
+x = np.vstack(df.drop('fruit_name', axis = 1).values) # mx4
 y = np.vstack(df['fruit_name'].values) # mx1
 
-models = []
-for class_name in ['apple']:# df['fruit_name'].unique():
-    model = train(x, y, class_name)
-    models.append(model)
+class_names = df['fruit_name'].unique()
+x = np.vstack(df.drop('fruit_name', axis = 1).values) # mx4
+y = np.vstack(df['fruit_name'].values) # mx1
+alpha = 3e-4 # max learning rate to prevent divergence
+    
+models = train_models(x, y, alpha, class_names)
 
-# print(predict(x, models))
+# normalized inputs
+x = norm(x)
+alpha = 1
+
+models = train_models(x, y, alpha, class_names)
+
+h_x = predict(x, models)
+print('accuracy: ', accuracy(h_x, y))
+
+# confusion matrix
+plot_confusion_matrix(h_x, y, class_names)
+
 plt.show()

@@ -1,0 +1,5 @@
+Overfitting -> Regularization (bias x variance), minimize theta to smooth model -> final week 3
+unbalanced Dataset -> undersampling, oversmapling
+split dataset -> train, validation and test workflow
+cross validation, k-folds, bootstrapping
+metrics
