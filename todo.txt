@@ -1,5 +1,7 @@
-Overfitting -> Regularization (bias x variance), minimize theta to smooth model -> final week 3
-unbalanced Dataset -> undersampling, oversmapling
-split dataset -> train, validation and test workflow
-cross validation, k-folds, bootstrapping
+decision tree, ramdom forest
+Overfitting -> Regularization (bias x variance), minimize theta to smooth model -> final week 3, exercise 2
+unbalanced Dataset -> undersampling, oversampling
 metrics
+split dataset -> train, validation and test workflow
+cross validation, k-folds, bootstrapping, nested k fold cross validation
+grid search, ramdom search
