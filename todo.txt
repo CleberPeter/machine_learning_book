@@ -1,5 +1,7 @@
+logistic regression : https://ricardomatsumura.medium.com/regress%C3%A3o-log%C3%ADstica-556d81684bf7
 support vector machines
 decision tree, ramdom forest
+K-nearest neighbors
 Overfitting -> Regularization (bias x variance), minimize theta to smooth model -> final week 3, exercise 2
 unbalanced Dataset -> undersampling, oversampling
 metrics
