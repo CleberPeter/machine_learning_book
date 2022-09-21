@@ -4,7 +4,7 @@ import pandas as pd
 import seaborn as sns; 
 from sklearn.metrics import confusion_matrix
 
-def sigma(z):
+def sigmoid(z):
     """
     Logistic function
     Arguments:
@@ -31,7 +31,7 @@ def add_ones_column(x):
 
 def h(x, o):
     """
-    Logistic regression model: sigma(o^Tx)
+    Logistic regression model: sigmoid(o^Tx)
     Arguments:
         x: np.array (mxn)
         o: np.array (n+1xk)
@@ -39,7 +39,7 @@ def h(x, o):
         np.array (mxk)
     """
     x = add_ones_column(x)
-    return sigma(np.dot(x, o))
+    return sigmoid(np.dot(x, o))
 
 def half_MSE(x, o, y):
     """
@@ -125,15 +125,15 @@ def logistic_regression_cost(x, o, y):
         o: np.array (n+1xk)
         y: np.array (mx1)
     Returns:
-        double (half mse)
+        double
     """
     m = np.shape(x)[0]
     h_x = h(x, o) # mxn
     y_t = np.transpose(y) # mx1 -> 1xm
 
-    J = np.dot(y_t, (log_without_nan(h_x))) + np.dot((1-y_t),(log_without_nan(1 - h_x))) # 1xn
+    J = np.dot(-y_t, (log_without_nan(h_x))) - np.dot((1-y_t),(log_without_nan(1 - h_x))) # 1xn
 
-    return -J/m
+    return J/m
 
 def dJ(x, o, y):
     """
@@ -344,10 +344,10 @@ def plot_confusion_matrix(h_x, y, class_names):
     ax.xaxis.set_ticklabels(class_names)
     ax.yaxis.set_ticklabels(class_names)
 
-# plot sigma function
+# plot sigmoid function
 m = 100
 x = np.linspace(-10, 10, m).reshape(m, 1)
-y = sigma(x)
+y = sigmoid(x)
 
 fig = plt.figure(figsize=(20,10))
 plt.plot(x, y)
@@ -356,8 +356,7 @@ plt.axhline(y = 0.5, color = 'k')
 
 # arbitrary data to visualize cost function
 y = np.zeros(m).reshape(m, 1)
-y[int(0.5*m):] = 1
-m = 100
+y[:int(0.5*m)] = 1
 o1 = np.linspace(-10, 10, m)
 o2 = o1
 plot_cost(x, [o1, o2], y, half_MSE)
