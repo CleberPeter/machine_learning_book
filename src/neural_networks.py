@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+SEED = 17
+
 def add_ones_column(x):
     """
     Append ones on first column ([a b c] -> [1 a b c])
@@ -109,7 +111,7 @@ def backpropagation(x, o_list, y):
         
     return list(reversed(dJ_o)) # reorder
 
-def gradient_descent(x, o_list, y, alpha, max_iterations):
+def gradient_descent(x, o_list, y, alpha, max_iterations, min_error):
     """
     Gradient descent -> Discover what o minimize j
     Arguments:
@@ -119,30 +121,55 @@ def gradient_descent(x, o_list, y, alpha, max_iterations):
         y: np.array (mxk)
         alpha: double (learning rate)
         max_iterations: int
+        min_error: double (stop condition)
     Returns:
-        o_list: list of np.array (rxs).
+        o_list: list of np.array (rxs)
         i: int (iterations number)
         j_hist: list of double
     """
     i = 0
     grad = backpropagation(x, o_list, y)
-    j_hist = np.zeros((max_iterations, 1))
-    
-    while i < max_iterations:
+    j_hist = []
+    while np.linalg.norm(grad[-1]) > min_error and i < max_iterations:
         for o_l, grad_l in zip(o_list, grad):
             o_l[1:] = o_l[1:] - alpha*grad_l
         
         h_x = forward_propagation(x, o_list)[-1]
-        j_hist[i] = logistic_regression_cost(h_x, y)
+        j_hist.append(logistic_regression_cost(h_x, y)[0])
         
         grad = backpropagation(x, o_list, y)
         i += 1
 
     return [o_list, i, j_hist]
 
+def neural_network_classifier(x, y, hidden_layers_sizes, alpha, max_iterations, min_error):
+    """
+    Neural network classifier
+    Arguments:
+        x: np.array (mxn)
+        y: np.array (mxk)
+        hidden_layers_sizes: list of np.array (rxs)
+        alpha: double (learning rate)
+        max_iterations: int
+        min_error: double (stop condition)
+    Returns:
+        o_list: list of np.array (rxs)
+        i: int (iterations number)
+        j_hist: list of double
+    """
+    
+    o_start_list = []
+    last_hidden_layer_size = np.shape(x)[1]
+    np.random.seed(SEED)
+    for hidden_layer_size in hidden_layers_sizes:
+        o_start_list.append(np.random.rand(last_hidden_layer_size + 1, hidden_layer_size))
+        last_hidden_layer_size = hidden_layer_size
+    
+    o_start_list.append(np.random.rand(last_hidden_layer_size + 1, np.shape(y)[1]))
+    return gradient_descent(x, o_start_list, y, alpha, max_iterations, min_error)
+
 # XOR operator
 x = np.array([[0, 0], [0, 1], [1, 0], [1, 1]]) # 4x2
-# x = np.tile(x, (10000,1)) # repeat 8 times
 
 o_list = []
 o_1 = np.array([[-30, 10], [20, -20], [20, -20]]) # 3x2
@@ -150,22 +177,19 @@ o_list.append(o_1)
 o_2 = np.array([[-10], [20], [20]]) # 3x1
 o_list.append(o_2)
 
-# print(forward_propagation(x, o_list)[-1])
+print(forward_propagation(x, o_list)[-1])
 
-# config gradient descent
-o_start_list = []
-o_start_list.append(np.random.rand(3,2)) # o_1
-o_start_list.append(np.random.rand(3,1)) # o_2
-max_iterations = 30000
-alpha = 1e-1
-
-# xor expected output
+# XOR expected output
 y = np.array([[1], [0], [0], [1]]) # 4x1
-# y = np.tile(y, (10000,1)) # repeat 8 times
 
-[min_o, iterations, j_hist] = gradient_descent(x, o_start_list, y, alpha, max_iterations)
-print('')
+alpha = 1e-1
+max_iterations = 30000 # 7500
+min_error = 1e-4
+hidden_layers_sizes = (2,) # (8,)
+[min_o, i, j_hist] = neural_network_classifier(x, y, hidden_layers_sizes, alpha, max_iterations, min_error)
+print('iterations:', i)
 print(forward_propagation(x, min_o)[-1])
 
+plt.figure(figsize=(20,10))
 plt.plot(j_hist)
 plt.show()
