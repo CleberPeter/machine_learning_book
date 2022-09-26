@@ -2,7 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 SEED = 17
-
+np.random.seed(SEED)
+    
 def add_ones_column(x):
     """
     Append ones on first column ([a b c] -> [1 a b c])
@@ -160,7 +161,6 @@ def neural_network_classifier(x, y, hidden_layers_sizes, alpha, max_iterations, 
     
     o_start_list = []
     last_hidden_layer_size = np.shape(x)[1]
-    np.random.seed(SEED)
     for hidden_layer_size in hidden_layers_sizes:
         o_start_list.append(np.random.rand(last_hidden_layer_size + 1, hidden_layer_size))
         last_hidden_layer_size = hidden_layer_size
@@ -192,4 +192,4 @@ print(forward_propagation(x, min_o)[-1])
 
 plt.figure(figsize=(20,10))
 plt.plot(j_hist)
-plt.show()
+# plt.show()
