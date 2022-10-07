@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+import scipy.ndimage as ndimage
 
 SEED = 17
 np.random.seed(SEED)
@@ -62,15 +64,15 @@ def logistic_regression_cost(h_x, y):
     """
     Logistic regression cost
     Arguments:
-        h_x: np.array (mx1)
-        y: np.array (mx1)
+        h_x: np.array (mxn)
+        y: np.array (mxn)
     Returns:
         double (half mse)
     """
     m = np.shape(y)[0]
-    y_t = np.transpose(y) # mx1 -> 1xm
-
-    J = np.dot(-y_t, (log_without_nan(h_x))) - np.dot((1-y_t),(log_without_nan(1 - h_x))) # 1xn
+    J = 0
+    for h_x_i, y_i in zip(h_x, y):
+        J += -y_i * log_without_nan(h_x_i) - (1-y_i)*log_without_nan(1 - h_x_i)
 
     return J/m
 
@@ -112,7 +114,7 @@ def backpropagation(x, o_list, y):
         
     return list(reversed(dJ_o)) # reorder
 
-def gradient_descent(x, o_list, y, alpha, max_iterations, min_error):
+def gradient_descent(x, o_list, y, alpha, max_iterations):
     """
     Gradient descent -> Discover what o minimize j
     Arguments:
@@ -122,7 +124,6 @@ def gradient_descent(x, o_list, y, alpha, max_iterations, min_error):
         y: np.array (mxk)
         alpha: double (learning rate)
         max_iterations: int
-        min_error: double (stop condition)
     Returns:
         o_list: list of np.array (rxs)
         i: int (iterations number)
@@ -131,19 +132,19 @@ def gradient_descent(x, o_list, y, alpha, max_iterations, min_error):
     i = 0
     grad = backpropagation(x, o_list, y)
     j_hist = []
-    while np.linalg.norm(grad[-1]) > min_error and i < max_iterations:
+    while i < max_iterations:
         for o_l, grad_l in zip(o_list, grad):
             o_l[1:] = o_l[1:] - alpha*grad_l
         
         h_x = forward_propagation(x, o_list)[-1]
-        j_hist.append(logistic_regression_cost(h_x, y)[0])
+        j_hist.append(logistic_regression_cost(h_x, y))
         
         grad = backpropagation(x, o_list, y)
         i += 1
 
     return [o_list, i, j_hist]
 
-def neural_network_classifier(x, y, hidden_layers_sizes, alpha, max_iterations, min_error):
+def neural_network_classifier(x, y, hidden_layers_sizes, alpha, max_iterations):
     """
     Neural network classifier
     Arguments:
@@ -152,7 +153,6 @@ def neural_network_classifier(x, y, hidden_layers_sizes, alpha, max_iterations, 
         hidden_layers_sizes: list of np.array (rxs)
         alpha: double (learning rate)
         max_iterations: int
-        min_error: double (stop condition)
     Returns:
         o_list: list of np.array (rxs)
         i: int (iterations number)
@@ -166,9 +166,49 @@ def neural_network_classifier(x, y, hidden_layers_sizes, alpha, max_iterations, 
         last_hidden_layer_size = hidden_layer_size
     
     o_start_list.append(np.random.rand(last_hidden_layer_size + 1, np.shape(y)[1]))
-    return gradient_descent(x, o_start_list, y, alpha, max_iterations, min_error)
+    return gradient_descent(x, o_start_list, y, alpha, max_iterations)
 
+def show_image(X, n_images, size_image = [20, 20]):
+    """
+    Show image in gray scale
+    Arguments:
+        X: np.array (mxn)
+        n_images: int
+        size_image: np.array (rxs) -> r.s = n
+    Returns:
+    """
+    
+    n_images_sqrt = int(np.sqrt(n_images))
+    f, axarr = plt.subplots(n_images_sqrt, n_images_sqrt)
+    
+    image = 0
+    for i in range(n_images_sqrt):
+        for j in range(n_images_sqrt):
+            x = X[image, :].reshape(size_image)
+            x_rot = ndimage.rotate(x, 90, reshape=True)
+
+            axarr[i, j].imshow(x_rot, cmap='gray', origin='lower')
+            axarr[i, j].axis('off')
+            image += 1
+
+def vectorize(x, n_labels):
+    """
+    Transform integer into array like: 2 -> [0 0 1 0 ... 0]
+    Arguments:
+        x: np.array (mx1)
+        n_labels: int
+    Returns:
+        np.array (mxn_labels)
+    """
+    X = np.zeros([m, n_labels])
+
+    for i, x_i in enumerate(x):
+        X[i, x_i] = 1
+
+    return X
+    
 # XOR operator
+"""
 x = np.array([[0, 0], [0, 1], [1, 0], [1, 1]]) # 4x2
 
 o_list = []
@@ -184,7 +224,6 @@ y = np.array([[1], [0], [0], [1]]) # 4x1
 
 alpha = 1e-1
 max_iterations = 30000 # 7500
-min_error = 1e-4
 hidden_layers_sizes = (2,) # (8,)
 [min_o, i, j_hist] = neural_network_classifier(x, y, hidden_layers_sizes, alpha, max_iterations, min_error)
 print('iterations:', i)
@@ -192,4 +231,32 @@ print(forward_propagation(x, min_o)[-1])
 
 plt.figure(figsize=(20,10))
 plt.plot(j_hist)
-# plt.show()
+"""
+# handwritten digits
+df = pd.read_csv('datasets/classifier_multiclass/handwritten_digits.csv', header=None)
+X = df.iloc[:, 0:400].values
+m = np.shape(X)[0]
+y = df.iloc[:, 400]
+
+print('shape: ', df.shape)
+print('classes:')
+print(y.value_counts())
+    
+n_images = 4
+indexes = np.random.randint(0, m, n_images)
+show_image(X[indexes], n_images)
+
+alpha = 1e-1
+max_iterations = 30000
+hidden_layers_sizes = (25,) # (8,)
+
+n_labels = 10
+Y = vectorize(y, n_labels)
+[min_o, i, j_hist] = neural_network_classifier(X, Y, hidden_layers_sizes, alpha, max_iterations)
+pred = forward_propagation(X[indexes], min_o)
+
+print(pred[-1])
+plt.figure()
+plt.plot(j_hist)
+
+plt.show()
