@@ -112,7 +112,7 @@ def backpropagation(o_vect, x, y, layers_sizes):
     L = len(a) - 1
 
     a_L = a[L] # output from model
-    delta_l = a_L - y # (-1/m) * (y/a_L - np.nan_to_num((1 - y)/(1-a_L))) * d_sigmoid(a_L)
+    delta_l = (-1/m) * (y/a_L - np.nan_to_num((1 - y)/(1-a_L))) * d_sigmoid(a_L)
     
     # backwards
     dJ_o = []
@@ -325,7 +325,7 @@ print(forward_propagation(x, o_list)[-1])
 y = np.array([[1], [0], [0], [1]]) # 4x1
 
 alpha = 1e-1
-max_iterations = 1000
+max_iterations = 5000
 hidden_layers_sizes = [2] # [8]
 
 layers_sizes = [np.shape(x)[1]]
