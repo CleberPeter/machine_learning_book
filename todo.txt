@@ -5,18 +5,36 @@ support vector machines
 decision tree, ramdom forest
 K-nearest neighbors
 
-# Unsupervised Learning
-K-means
-
 # Model Selection
 
-https://scikit-learn.org/stable/model_selection.html
+    https://scikit-learn.org/stable/model_selection.html
 
-Overfitting
-split dataset -> train, validation and test workflow (shuffle, learning curve) (validation_error is lower than test_error)
-cross validation, k-folds, bootstrapping, nested k fold cross validation
+    Overfitting
+        split dataset -> train, validation and test workflow (shuffle) (validation_error is lower than test_error)
+        cross validation, k-folds, bootstrapping, nested k fold cross validation
 
-Regularization (bias x variance), minimize theta to smooth model -> final week 3, exercise 2
+    Bias x Variance (validation curve)
+        to chosing between models comparing modelsxerror in training and test:
+        bias -> underfit, train and validation error are high
+        variance -> overfit, train error low and validation error high 
+
+    regularization -> minimize theta to smooth model -> final week 3, exercise 2
+        bias -> high regularization parameter
+        variance -> low regularization parameter
+        different models emerge from different regularization parameters and variance and bias can be analyzed to chose
+        in this curve high bias and high variance have the positions switched 
+
+    learning curve
+        varies the amount of training examples given to the model and monitors error in training and validation
+        in this curve train start low and grows while the validation the opposite. that is, with few examples any model 
+        adapts to the data (low training error), but with many examples the probability of generating a model that generalizes 
+        is higher (low validation error).
+
+        high bias -> the validation error does not decrease with examples increase, that is, the model does not improve with more data.
+            get more features, increase model complexity 
+        high variance -> there will be a gap between train and validation curves, decrease regularization parameter
+            get more train examples, use less features, increase regularization parameter
+
 
 unbalanced Dataset -> undersampling, oversampling
 hyperparameters tunning -> grid search, ramdom search
@@ -24,3 +42,6 @@ hyperparameters tunning -> grid search, ramdom search
 dimensionality reduction -> PCA, autoencoders
 
 https://scikit-learn.org/stable/tutorial/machine_learning_map/index.html
+
+# Unsupervised Learning
+K-means
