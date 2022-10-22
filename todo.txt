@@ -1,9 +1,12 @@
 # Supervised Learning
 
-logistic regression : https://ricardomatsumura.medium.com/regress%C3%A3o-log%C3%ADstica-556d81684bf7
-support vector machines
-decision tree, ramdom forest
-K-nearest neighbors
+    logistic regression : https://ricardomatsumura.medium.com/regress%C3%A3o-log%C3%ADstica-556d81684bf7
+    support vector machines
+        SVC, SVR
+        C parameter is inverse of regularization parameter and is proportional to classifier margin
+        in logistic regression (z > 0 , y = 1) in svm (z > 1, y = 1)
+    decision tree, ramdom forest
+    K-nearest neighbors
 
 # Model Selection
 
@@ -35,8 +38,10 @@ K-nearest neighbors
         high variance -> there will be a gap between train and validation curves, decrease regularization parameter
             get more train examples, use less features, increase regularization parameter
 
+unbalanced dataset
+    undersampling, oversampling
+    confusion matrix -> recall metric, fscore
 
-unbalanced Dataset -> undersampling, oversampling
 hyperparameters tunning -> grid search, ramdom search
 
 dimensionality reduction -> PCA, autoencoders
@@ -44,4 +49,4 @@ dimensionality reduction -> PCA, autoencoders
 https://scikit-learn.org/stable/tutorial/machine_learning_map/index.html
 
 # Unsupervised Learning
-K-means
+    K-means
