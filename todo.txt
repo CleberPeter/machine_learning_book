@@ -44,7 +44,10 @@ unbalanced dataset
 
 hyperparameters tunning -> grid search, ramdom search
 
-dimensionality reduction -> PCA, autoencoders
+dimensionality reduction
+    facilitates data visualization
+    speed up learning algorithm
+    PCA, autoencoders
 
 https://scikit-learn.org/stable/tutorial/machine_learning_map/index.html
 
