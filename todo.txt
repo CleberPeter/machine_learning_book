@@ -10,8 +10,6 @@
 
 # Model Selection
 
-    https://scikit-learn.org/stable/model_selection.html
-
     Overfitting
         split dataset -> train, validation and test workflow (shuffle) (validation_error is lower than test_error)
         cross validation, k-folds, bootstrapping, nested k fold cross validation
@@ -38,22 +36,27 @@
         high variance -> there will be a gap between train and validation curves, decrease regularization parameter
             get more train examples, use less features, increase regularization parameter
 
-unbalanced dataset
+    hyperparameters tunning -> grid search, ramdom search
+
+# Unbalanced dataset
     undersampling, oversampling
     confusion matrix -> recall metric, fscore
 
-hyperparameters tunning -> grid search, ramdom search
+    Anomaly Detection
+        more robust for skewed classes
+        Naive bayes
 
-dimensionality reduction
+# Dimensionality reduction
     facilitates data visualization
     speed up learning algorithm
     PCA, autoencoders
-
-https://scikit-learn.org/stable/tutorial/machine_learning_map/index.html
 
 # Unsupervised Learning
     K-means
 
 # Problems
-
     spam classifier
+
+# Links
+    https://scikit-learn.org/stable/tutorial/machine_learning_map/index.html
+    https://scikit-learn.org/stable/model_selection.html
