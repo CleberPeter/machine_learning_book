@@ -57,9 +57,6 @@
 # Unsupervised Learning
     K-means
 
-# Problems
-    spam classifier
-
 # Links
     https://scikit-learn.org/stable/tutorial/machine_learning_map/index.html
     https://scikit-learn.org/stable/model_selection.html
