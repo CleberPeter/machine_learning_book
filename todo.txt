@@ -47,7 +47,7 @@
 
     Anomaly Detection
         more robust for skewed classes
-        Naive bayes
+        gaussian distribution, Naive bayes, lognormal, multivariate gaussian to model correlation
 
 # Dimensionality reduction
     facilitates data visualization
